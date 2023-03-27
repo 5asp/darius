@@ -10,12 +10,12 @@ import (
 )
 
 func main() {
-
+	config := account.NewConfig(".")
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(os.Stderr)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "listen", "8081", "caller", log.DefaultCaller)
+	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "listen", config.App.Addr, "caller", log.DefaultCaller)
 
 	r := account.NewHttpServer(account.NewService(), logger)
-	logger.Log("msg", "HTTP", "addr", "8081")
-	logger.Log("err", http.ListenAndServe(":8081", r))
+	logger.Log("msg", "HTTP", "addr", config.App.Addr)
+	logger.Log("err", http.ListenAndServe(config.App.Addr, r))
 }

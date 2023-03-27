@@ -1,0 +1,15 @@
+app:
+  name: "gogo"
+  addr: :8081
+  secret: 11dadfdsasd
+database:
+  host: 173.82.225.70
+  password: Lumia650
+  dbname: newdb
+  port: 30543
+  user: postgres
+redis:
+  host: 127.0.0.1
+  password: 112131
+  dbname: 0
+  port: 6379

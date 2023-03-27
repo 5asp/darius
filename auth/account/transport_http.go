@@ -21,14 +21,14 @@ func NewHttpServer(svc Service, logger kitlog.Logger) *mux.Router {
 
 	SignInHandler := kithttp.NewServer(
 		makeSignInEndpoint(svc),
-		decodeValidateAccountRequest,
+		decodeValidateSignInRequest,
 		encodeResponse,
 		options...,
 	)
 
 	SignUpHandler := kithttp.NewServer(
 		makeSignUpEndpoint(svc),
-		decodeValidateAccountRequest,
+		decodeValidateSignUpRequest,
 		encodeResponse,
 		options...,
 	)
@@ -39,10 +39,12 @@ func NewHttpServer(svc Service, logger kitlog.Logger) *mux.Router {
 		encodeResponse,
 		options...,
 	)
+
 	r := mux.NewRouter()
 	r.Methods("POST").Path("/v1/auth/signin").Handler(SignInHandler)           //注册账号
 	r.Methods("POST").Path("/v1/auth/signup").Handler(SignUpHandler)           //登录账号
 	r.Methods("POST").Path("/v1/validate-token").Handler(validateTokenHandler) //校验账号Token
+
 	return r
 }
 
@@ -74,8 +76,15 @@ func codeFrom(err error) int {
 	}
 }
 
-func decodeValidateAccountRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+func decodeValidateSignInRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	var request validateSignInRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return nil, err
+	}
+	return request, nil
+}
+func decodeValidateSignUpRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	var request validateSignUpRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
 	}

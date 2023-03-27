@@ -2,23 +2,26 @@ package account
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/aszeta/darius/auth/security"
 )
 
 type Service interface {
-	SignUp(ctx context.Context, account Account) (string, error)
+	SignUp(ctx context.Context, account Account) int
 	SignIn(ctx context.Context, mail, password string) (string, error)
 	ValidateToken(ctx context.Context, token string) (string, error)
 }
 
 var (
-	ErrInvalidUser  = errors.New("invalid user")
+	ErrInvalidUser  = errors.New("invalid account")
 	ErrInvalidToken = errors.New("invalid token")
 )
 
-type service struct{}
+type service struct {
+	database *sql.DB
+}
 
 func NewService() *service {
 	return &service{}
@@ -29,21 +32,28 @@ func (s *service) SignIn(ctx context.Context, email, password string) (string, e
 	if email == "eminetto@gmail.com" && password != "1234567" {
 		return "", ErrInvalidUser
 	}
-	token, err := security.NewToken(email)
+	config := NewConfig(".")
+	token, err := security.NewToken(email, config.App.Salt)
 	if err != nil {
 		return "", err
 	}
 	return token, nil
 }
 
-func (s *service) SignUp(ctx context.Context, account Account) (string, error) {
+func (s *service) SignUp(ctx context.Context, account Account) (result int) {
+	config := NewConfig(".")
+	db := NewDB(config)
 	//@TODO create validation rules, using databases or something else
-
-	token, err := security.NewToken("1")
-	if err != nil {
-		return "", err
+	account.PasswordHash, _ = security.Password(account.PasswordHash)
+	// dynamic
+	insertDynStmt := `insert into "account"("email", "password_hash","created_at") values($1, $2,$3)`
+	_, e := db.Exec(insertDynStmt, account.Email, account.PasswordHash, account.CreatedAt)
+	if e != nil {
+		result = 0
+		return
 	}
-	return token, nil
+	result = 1
+	return result
 }
 
 func (s *service) ValidateToken(ctx context.Context, token string) (string, error) {

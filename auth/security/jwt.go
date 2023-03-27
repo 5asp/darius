@@ -15,7 +15,7 @@ const (
 )
 
 // NewToken create a new token
-func NewToken(email string) (string, error) {
+func NewToken(email string, secret string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": email,
 		"nbf":   time.Now().Unix(),
@@ -23,7 +23,7 @@ func NewToken(email string) (string, error) {
 		"exp":   time.Now().Local().Add(time.Hour*time.Duration(JwtExpHour) + time.Minute*time.Duration(JwtExpMin) + time.Second*time.Duration(JwtExpSec)).Unix(),
 	})
 	// Sign and get the complete encoded token as a string using the secret
-	sToken, err := token.SignedString([]byte(JWTSecret))
+	sToken, err := token.SignedString([]byte(secret))
 	if err != nil {
 		return "", err
 	}

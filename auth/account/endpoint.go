@@ -52,11 +52,11 @@ func makeSignUpEndpoint(svc Service) endpoint.Endpoint {
 			PasswordHash: password,
 			CreatedAt:    time.Now().Unix(),
 		}
-		token, err := svc.SignUp(ctx, data)
-		if err != nil {
+		result := svc.SignUp(ctx, data)
+		if result == 0 {
 			return validateSignUpResponse{"", err.Error()}, err
 		}
-		return validateSignUpResponse{data.ID.String(), ""}, err
+		return validateSignUpResponse{data.Email, ""}, err
 	}
 }
 
